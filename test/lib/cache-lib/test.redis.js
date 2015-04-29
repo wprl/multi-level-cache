@@ -7,6 +7,11 @@ var sinon = require('sinon');
 var redis = require('redis');
 var redisAdapter = require('../../../lib/cache-lib/redis');
 
+function errorHandlerSwallowError(){
+  // do nothing
+}
+
+
 /*eslint-disable max-statements */
 describe('redis adapter', function(){
 
@@ -21,7 +26,7 @@ describe('redis adapter', function(){
 
     // This instance of the redis plugin will use our stubbed out redis.clientCreate
     // above to return an object with a get() that returns an error.
-    var redisPlugin = redisAdapter({});
+    var redisPlugin = redisAdapter({}, errorHandlerSwallowError);
     redisPlugin.get('testkey', function (err, value) {
       assert(err);
       assert.equal('fake error', err);
@@ -40,7 +45,7 @@ describe('redis adapter', function(){
       return clientStub;
     });
 
-    var redisPlugin = redisAdapter({});
+    var redisPlugin = redisAdapter({}, errorHandlerSwallowError);
     redisPlugin.set('testkey', 'testvalue', function(){
       assert.equal(clientStub.set.callCount, 1);
       redisStub.restore();
@@ -57,7 +62,7 @@ describe('redis adapter', function(){
       return clientStub;
     });
 
-    var redisPlugin = redisAdapter({});
+    var redisPlugin = redisAdapter({}, errorHandlerSwallowError);
     redisPlugin.set('testkey', 'testvalue', 15, function(){
       assert.equal(clientStub.set.callCount, 1);
       assert.equal(clientStub.expire.callCount, 1);
@@ -76,7 +81,7 @@ describe('redis adapter', function(){
       return clientStub;
     });
 
-    var redisPlugin = redisAdapter({});
+    var redisPlugin = redisAdapter({}, errorHandlerSwallowError);
     redisPlugin.get('testkey', function(){
       assert.equal(clientStub.get.callCount, 1);
       redisStub.restore();
@@ -93,7 +98,7 @@ describe('redis adapter', function(){
       return clientStub;
     });
 
-    var redisPlugin = redisAdapter({});
+    var redisPlugin = redisAdapter({}, errorHandlerSwallowError);
     redisPlugin.get('this key is not in the cache', function(err, result){
       assert(err);
       assert.equal('MultiError', err.name);
@@ -114,7 +119,7 @@ describe('redis adapter', function(){
       return clientStub;
     });
 
-    var redisPlugin = redisAdapter({});
+    var redisPlugin = redisAdapter({}, errorHandlerSwallowError);
     redisPlugin.del('testkey', function(){
       assert.equal(clientStub.del.callCount, 1);
       redisStub.restore();
@@ -132,7 +137,7 @@ describe('redis adapter', function(){
       return clientStub;
     });
 
-    var redisPlugin = redisAdapter({});
+    var redisPlugin = redisAdapter({}, errorHandlerSwallowError);
     redisPlugin.flushAll(function(err){
       assert(!err);
       redisStub.restore();
@@ -152,7 +157,7 @@ describe('redis adapter', function(){
       return clientStub;
     });
 
-    var redisPlugin = redisAdapter({});
+    var redisPlugin = redisAdapter({}, errorHandlerSwallowError);
     redisPlugin.get('testkey', function(error, cachedValue){
       // Check for Invalid Date (not a date or not Invalid Date)
       assert(!cachedValue.a.getTime || !isNaN(cachedValue.a.getTime()));
@@ -166,7 +171,7 @@ describe('redis adapter', function(){
   it('uses default options if no options set', function () {
     var redisStub = sinon.stub(redis, 'createClient').returns({});
 
-    redisAdapter();
+    redisAdapter(null, errorHandlerSwallowError);
     assert(redisStub.calledOnce);
     assert(redisStub.calledWithExactly());
 
@@ -177,7 +182,7 @@ describe('redis adapter', function(){
     var redisStub = sinon.stub(redis, 'createClient').returns({});
     var options = {};
 
-    redisAdapter(options);
+    redisAdapter(options, errorHandlerSwallowError);
     assert(redisStub.calledOnce);
     assert(redisStub.calledWithExactly(options));
 
@@ -192,7 +197,7 @@ describe('redis adapter', function(){
       x: 'y'
     };
 
-    redisAdapter(options);
+    redisAdapter(options, errorHandlerSwallowError);
     assert(redisStub.calledOnce);
     assert(redisStub.calledWithExactly(options.port, options.host, options));
 
